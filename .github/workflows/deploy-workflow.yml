@@ -28,7 +28,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
 
-
   deploy:
     name: Deploy to EC2
     needs: build
@@ -59,7 +58,7 @@ jobs:
 
             services:
               ${{secrets.PROJECT_NAME}}:
-                image: ${{ secrets.DOCKERHUB_USER }}/${{secrets.PROJECT_NAME}}:latest
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/${{secrets.PROJECT_NAME}}:latest
                 container_name: ${{secrets.PROJECT_NAME}}
                 restart: unless-stopped
                 expose:
@@ -95,12 +94,11 @@ jobs:
 
             http {
               upstream backend {
-                server myservice:8080;
+                server ${{secrets.PROJECT_NAME}}:8080;
               }
 
               server {
                 listen 80;
-                server_name _;
 
                 location / {
                   proxy_pass         http://backend;
