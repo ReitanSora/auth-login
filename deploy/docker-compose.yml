@@ -1,6 +1,6 @@
 services:
   auth-login:
-    image: reitansora/auth-login:latest
+    image: ghcr.io/reitansora/auth-login:latest
     container_name: auth-login
     restart: unless-stopped
     expose:
@@ -23,7 +23,7 @@ services:
       - auth-login
     networks:
       - webnet
-    command: ["sh","-c","echo 'Waiting 15s for auth-login to start…' && sleep 15 && echo 'Starting nginx now' && exec nginx -g 'daemon off;'"]
+    command: ["sh","-c","echo 'Waiting 15s for service to start…' && sleep 15 && echo 'Starting nginx now' && exec nginx -g 'daemon off;'"]
 
 networks:
   webnet:
