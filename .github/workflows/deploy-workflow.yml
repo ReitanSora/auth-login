@@ -34,82 +34,84 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-      EC2_URL: ${{ secrets.EC2_PUBLIC_DNS }}
-      EC2_USER: ubuntu
-      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-      PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
-      DB_URL: ${{ secrets.DB_URL }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      EC2_HOST:            ${{ secrets.EC2_PUBLIC_DNS }}
+      EC2_USER:            ubuntu
+      DOCKERHUB_USER:      ${{ secrets.DOCKERHUB_USERNAME }}
+      PROJECT_NAME:        ${{ secrets.PROJECT_NAME }}
+      DB_URL:              ${{ secrets.DB_URL }}
+      SECRET_KEY:          ${{ secrets.SECRET_KEY }}
     steps:
       - name: Setup SSH for EC2
         uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
         with:
-          EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
-          EC2_URL: $EC2_URL
+          EC2_SSH_PRIVATE_KEY: ${{ env.EC2_SSH_PRIVATE_KEY }}
+          EC2_URL:             ${{ env.EC2_HOST }}
 
       - name: Deploy new container image on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_URL << 'EOF'
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
 
-            sudo mkdir -p /home/ubuntu/app/nginx
+          sudo mkdir -p /home/ubuntu/app/nginx
 
-            sudo tee /home/ubuntu/app/docker-compose.yml > /dev/null << 'COMPOSE'
-              services:
-                ${PROJECT_NAME}:
-                  image: ${DOCKERHUB_USER}/${PROJECT_NAME}:latest
-                  container_name: ${PROJECT_NAME}
-                  restart: unless-stopped
-                  expose:
-                    - "8080"
-                  environment:
-                    - DB_URL=${DB_URL}
-                    - SECRET_KEY=${SECRET_KEY}
-                  networks:
-                    - webnet
-          
-                nginx:
-                  image: nginx:stable-alpine
-                  container_name: nginx
-                  restart: unless-stopped
-                  ports:
-                    - "80:80"
-                  volumes:
-                    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-                  depends_on:
-                    - ${PROJECT_NAME}
-                  networks:
-                    - webnet
-          
+          sudo tee /home/ubuntu/app/docker-compose.yml > /dev/null << 'COMPOSE'
+          version: '3.8'
+
+          services:
+            ${PROJECT_NAME}:
+              image: ${DOCKERHUB_USER}/${PROJECT_NAME}:latest
+              container_name: ${PROJECT_NAME}
+              restart: unless-stopped
+              expose:
+                - "8080"
+              environment:
+                - DB_URL=${DB_URL}
+                - SECRET_KEY=${SECRET_KEY}
               networks:
-                webnet:
-                  driver: bridge
-                  name: bridge
-                COMPOSE
-          
-              sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << 'NGINX'
-                events { }
-          
-                http {
-                  upstream backend {
-                    server ${PROJECT_NAME}:8080;
-                  }
-          
-                  server {
-                    listen 80;
-          
-                    location / {
-                    proxy_pass         http://backend;
-                    proxy_http_version 1.1;
-                    proxy_set_header   Upgrade $http_upgrade;
-                    proxy_set_header   Connection "upgrade";
-                    proxy_set_header   Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                    }
-                  }
-                }
-                NGINX
-          
-                cd /home/ubuntu/app
-                sudo docker compose pull
-                sudo docker compose up -d --remove-orphans
-                EOF
+                - webnet
+
+            nginx:
+              image: nginx:stable-alpine
+              container_name: nginx
+              restart: unless-stopped
+              ports:
+                - "80:80"
+              volumes:
+                - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+              depends_on:
+                - ${PROJECT_NAME}
+              networks:
+                - webnet
+
+          networks:
+            webnet:
+              driver: bridge
+              name: webnet
+          COMPOSE
+
+          sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << 'NGINX'
+          events { }
+
+          http {
+            upstream backend {
+              server ${PROJECT_NAME}:8080;
+            }
+
+            server {
+              listen 80;
+
+              location / {
+                proxy_pass         http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header   Upgrade $http_upgrade;
+                proxy_set_header   Connection "upgrade";
+                proxy_set_header   Host $host;
+                proxy_cache_bypass $http_upgrade;
+              }
+            }
+          }
+          NGINX
+
+          cd /home/ubuntu/app
+          sudo docker compose pull
+          sudo docker compose up -d --remove-orphans
+          EOF
