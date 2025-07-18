@@ -4,7 +4,7 @@ FROM gradle:8.7-jdk17 AS build
 WORKDIR /home/gradle/src
 # Copiamos sólo los archivos de build para descargar dependencias
 COPY build.gradle settings.gradle ./
-RUN gradle downloadDependencies --no-daemon
+RUN gradle dependencies --no-daemon
 
 # Ahora copiamos el resto del código y compilamos
 COPY --chown=gradle:gradle . .
