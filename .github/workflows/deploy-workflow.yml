@@ -49,11 +49,11 @@ jobs:
 
       - name: Deploy new container image on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
 
           sudo mkdir -p /home/ubuntu/app/nginx
 
-          sudo tee /home/ubuntu/app/docker-compose.yml > /dev/null << 'COMPOSE'
+          sudo tee /home/ubuntu/app/docker-compose.yml > /dev/null << COMPOSE
           version: '3.8'
 
           services:
@@ -88,7 +88,7 @@ jobs:
               name: webnet
           COMPOSE
 
-          sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << 'NGINX'
+          sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << NGINX
           events { }
 
           http {
