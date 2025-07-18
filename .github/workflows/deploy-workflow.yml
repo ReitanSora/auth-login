@@ -88,12 +88,12 @@ jobs:
               name: webnet
           COMPOSE
 
-          sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << NGINX
+          sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << 'NGINX'
           events { }
 
           http {
             upstream backend {
-              server ${PROJECT_NAME}:8080;
+              server auth-login:8080;
             }
 
             server {
@@ -102,10 +102,10 @@ jobs:
               location / {
                 proxy_pass         http://backend;
                 proxy_http_version 1.1;
-                proxy_set_header   Upgrade \\$http_upgrade;
+                proxy_set_header   Upgrade $http_upgrade;
                 proxy_set_header   Connection "upgrade";
-                proxy_set_header   Host \\$host;
-                proxy_cache_bypass \\$http_upgrade;
+                proxy_set_header   Host $host;
+                proxy_cache_bypass $http_upgrade;
               }
             }
           }
