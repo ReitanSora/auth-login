@@ -71,6 +71,11 @@ jobs:
             sudo rm -rf /home/ubuntu/app/nginx
             sudo mkdir -p /home/ubuntu/app/nginx
             sudo mv /home/ubuntu/app/nginx.conf /home/ubuntu/app/nginx/nginx.conf
+            
+            sudo cat > /home/ubuntu/app/.env <<EOF
+            DB_URL=${{ secrets.DB_URL }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            EOF
 
             cd /home/ubuntu/app
             sudo docker compose down || true
