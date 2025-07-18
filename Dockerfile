@@ -1,4 +1,4 @@
-FROM gradle:8.7-jdk21 AS build
+FROM gradle:8.7-jdk17 AS build
 
 WORKDIR /home/gradle/src
 
@@ -6,7 +6,7 @@ COPY . .
 
 RUN gradle assemble --no-daemon -x test
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
