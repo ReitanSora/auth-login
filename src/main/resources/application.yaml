@@ -1,0 +1,29 @@
+security:
+  jwt:
+    secret-key: ${SECRET_KEY}
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: org.postgresql.Driver
+  application:
+    name: auth
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: umihiro
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  flyway:
+    create-schemas: true
+    default-schema: umihiro
+    schemas: umihiro
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+
+server:
+  port: 8080
