@@ -34,30 +34,26 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-      EC2_URL:            ${{ secrets.EC2_PUBLIC_DNS }}
-      EC2_USER:            ubuntu
-      DOCKERHUB_USER:      ${{ secrets.DOCKERHUB_USERNAME }}
-      PROJECT_NAME:        ${{ secrets.PROJECT_NAME }}
-      DB_URL:              ${{ secrets.DB_URL }}
-      SECRET_KEY:          ${{ secrets.SECRET_KEY }}
+      EC2_URL: ${{ secrets.EC2_PUBLIC_DNS }}
+      EC2_USER: ubuntu
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+      PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+      DB_URL: ${{ secrets.DB_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
     steps:
-      -
-        name: Setup SSH for EC2
+      - name: Setup SSH for EC2
         uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
         with:
           EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
           EC2_URL: $EC2_URL
 
-      -
-        name: Deploy new container image on EC2
+      - name: Deploy new container image on EC2
         run: |
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_URL << 'EOF'
 
             sudo mkdir -p /home/ubuntu/app/nginx
 
-            cat > /home/ubuntu/app/docker-compose.yml << 'COMPOSE'
-              version: '3.8'
-              
+            sudo tee /home/ubuntu/app/docker-compose.yml > /dev/null << 'COMPOSE'
               services:
                 ${PROJECT_NAME}:
                   image: ${DOCKERHUB_USER}/${PROJECT_NAME}:latest
@@ -70,7 +66,7 @@ jobs:
                     - SECRET_KEY=${SECRET_KEY}
                   networks:
                     - webnet
-              
+          
                 nginx:
                   image: nginx:stable-alpine
                   container_name: nginx
@@ -83,24 +79,24 @@ jobs:
                     - ${PROJECT_NAME}
                   networks:
                     - webnet
-              
+          
               networks:
                 webnet:
                   driver: bridge
                   name: bridge
                 COMPOSE
-                
-              cat > /home/ubuntu/app/nginx/nginx.conf << 'NGINX'
+          
+              sudo tee /home/ubuntu/app/nginx/nginx.conf > /dev/null << 'NGINX'
                 events { }
-                
+          
                 http {
                   upstream backend {
                     server ${PROJECT_NAME}:8080;
                   }
-                
+          
                   server {
                     listen 80;
-                    
+          
                     location / {
                     proxy_pass         http://backend;
                     proxy_http_version 1.1;
@@ -112,7 +108,7 @@ jobs:
                   }
                 }
                 NGINX
-                
+          
                 cd /home/ubuntu/app
                 sudo docker compose pull
                 sudo docker compose up -d --remove-orphans
