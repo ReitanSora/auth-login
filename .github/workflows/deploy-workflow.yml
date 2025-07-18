@@ -50,10 +50,10 @@ jobs:
             ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL
           
             
-            sudo mkdir -p /home/ec2-user/app/nginx
+            sudo mkdir -p /home/ubuntu/app/nginx
 
             
-            sudo cat > /home/ec2-user/app/docker-compose.yml << 'EOF'
+            sudo cat > /home/ubuntu/app/docker-compose.yml << 'EOF'
             version: '3.8'
 
             services:
@@ -89,7 +89,7 @@ jobs:
             EOF
 
             
-            sudo cat > /home/ec2-user/app/nginx/nginx.conf << 'EOF'
+            sudo cat > /home/ubuntu/app/nginx/nginx.conf << 'EOF'
             events { }
 
             http {
@@ -112,6 +112,6 @@ jobs:
             }
             EOF
 
-            cd /home/ec2-user/app
+            cd /home/ubuntu/app
             sudo docker compose pull
             sudo docker compose up -d --remove-orphans
