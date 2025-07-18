@@ -50,10 +50,10 @@ jobs:
             ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL
           
             # 1) Preparar carpeta
-            mkdir -p /home/ec2-user/app/nginx
+            sudo mkdir -p /home/ec2-user/app/nginx
 
             # 2) Crear docker-compose.yml
-            cat > /home/ec2-user/app/docker-compose.yml << 'EOF'
+            sudo cat > /home/ec2-user/app/docker-compose.yml << 'EOF'
             version: '3.8'
 
             services:
@@ -89,7 +89,7 @@ jobs:
             EOF
 
             # 3) Crear nginx.conf
-            cat > /home/ec2-user/app/nginx/nginx.conf << 'EOF'
+            sudo cat > /home/ec2-user/app/nginx/nginx.conf << 'EOF'
             events { }
 
             http {
