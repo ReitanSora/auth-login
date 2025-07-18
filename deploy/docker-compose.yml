@@ -25,10 +25,10 @@ services:
       - webnet
     entrypoint: [ "/bin/sh", "-c" ]
     command: >
-      echo "Waiting 15s for auth-login to start…" &&
-      sleep 15 &&
-      echo "Starting nginx now" &&
-      nginx -g 'daemon off;
+      echo "Waiting 15s for auth-login to start…"
+      sleep 15
+      echo "Starting nginx now"
+      exec nginx -g 'daemon off;'
 
 networks:
   webnet:
